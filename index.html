@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pricing Plans — Example</title>
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --muted:#9aa6b2;
+    --accent:#7c3aed; /* purple */
+    --accent-2:#06b6d4; /* teal */
+    --glass: rgba(255,255,255,0.03);
+    --popular-scale: 1.06;
+    --radius: 14px;
+    --shadow: 0 10px 30px rgba(2,6,23,0.6);
+    --transition: 300ms cubic-bezier(.2,.9,.2,1);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+
+  /* Page layout */
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px 20px;
+    background: linear-gradient(180deg, #071126 0%, #07121a 60%);
+    color: #e6eef6;
+  }
+  .wrap{
+    width:100%;
+    max-width:1100px;
+  }
+
+  header{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  header h1{margin:0 0 6px 0; font-size:28px;}
+  header p{margin:0;color:var(--muted)}
+
+  /* Toggle */
+  .toggle{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:center;
+    margin:18px 0 32px;
+  }
+  .switch{
+    --w:56px; --h:30px;
+    width:var(--w); height:var(--h);
+    background:var(--glass);
+    border-radius:50px;
+    padding:4px;
+    display:inline-grid;
+    grid-template-columns: 1fr 1fr;
+    align-items:center;
+    position:relative;
+  }
+  .switch input{display:none}
+  .knob{
+    position:absolute;
+    top:4px; left:4px;
+    width:calc(var(--h) - 8px); height:calc(var(--h) - 8px);
+    background:linear-gradient(180deg,#fff,#f0f0f0);
+    border-radius:50%;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+    transition: transform var(--transition);
+  }
+  .switch[data-state="yearly"] .knob{ transform: translateX(calc(var(--w) - var(--h))); }
+
+  /* Pricing grid */
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:22px;
+    align-items:start;
+  }
+
+  /* Card */
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:var(--radius);
+    padding:26px;
+    box-shadow: var(--shadow);
+    border:1px solid rgba(255,255,255,0.03);
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    min-width:0;
+  }
+
+  .card:hover{ transform: translateY(-6px); box-shadow: 0 20px 40px rgba(2,6,23,0.7); }
+
+  .plan-name{ font-weight:600; font-size:16px; letter-spacing:0.2px; color:#eaf1ff; }
+  .muted{ color:var(--muted); font-size:14px; margin-top:-4px }
+
+  .price{
+    font-size:32px;
+    font-weight:700;
+    line-height:1;
+  }
+  .period{ font-weight:600; font-size:14px; color:var(--muted); margin-left:6px }
+
+  ul.features{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;}
+  ul.features li{ font-size:14px; color:#dbe8f5; display:flex; gap:10px; align-items:center; }
+  ul.features li::before{ content:"✓"; display:inline-block; width:18px; height:18px; border-radius:4px; background:rgba(255,255,255,0.04); text-align:center; line-height:18px; color:var(--accent-2); font-weight:700; font-size:12px; }
+
+  .cta{
+    margin-top:auto;
+  }
+  .btn{
+    display:inline-block;
+    background:linear-gradient(180deg,var(--accent), #5b21b6);
+    color:white;
+    padding:12px 18px;
+    border-radius:10px;
+    font-weight:700;
+    text-decoration:none;
+    box-shadow: 0 8px 20px rgba(124,58,237,0.18);
+    transition: transform var(--transition), box-shadow var(--transition);
+  }
+  .btn.secondary{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.06);
+    color:#dbe8f5;
+    box-shadow:none;
+  }
+  .btn:hover{ transform: translateY(-4px); box-shadow: 0 14px 30px rgba(2,6,23,0.6); }
+
+  /* Popular plan styles */
+  .popular{
+    position:relative;
+    z-index:2;
+    transform-origin:center;
+    transition: transform var(--transition), box-shadow var(--transition);
+    border:1px solid rgba(255,255,255,0.06);
+  }
+
+  /* slight scale + pulse */
+  .popular.scale{
+    transform: scale(var(--popular-scale));
+    box-shadow: 0 30px 50px rgba(2,6,23,0.7);
+  }
+  .popular .pulse{
+    position:absolute;
+    inset:0;
+    border-radius:inherit;
+    z-index:-1;
+    background: radial-gradient(circle at 50% 0%, rgba(124,58,237,0.12), transparent 25%);
+    opacity:0;
+    animation: popPulse 2.8s infinite;
+    pointer-events:none;
+  }
+  @keyframes popPulse{
+    0%{ opacity:0; transform: scale(0.98); }
+    35%{ opacity:0.28; transform: scale(1.02); }
+    100%{ opacity:0; transform: scale(1.06); }
+  }
+
+  /* ribbon */
+  .ribbon{
+    position:absolute;
+    top:-12px;
+    left:50%;
+    transform:translateX(-50%) rotate(-6deg);
+    background: linear-gradient(90deg,#ffb86b,#ff7a59);
+    padding:8px 18px;
+    color:#0b1220;
+    font-weight:800;
+    border-radius:999px;
+    font-size:12px;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.5);
+  }
+
+  /* small detail underline */
+  .price-sub{ font-size:13px; color:var(--muted) }
+
+  /* Responsive */
+  @media (max-width:900px){
+    .grid{ grid-template-columns: repeat(1, 1fr); }
+    .ribbon{ left:auto; right:16px; transform: rotate(-6deg) translateX(0); top:12px; }
+    .popular.scale{ transform: none; }
+    .popular .pulse{ display:none; }
+  }
+
+  /* badge */
+  .badge{
+    display:inline-block;
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:999px;
+    background: rgba(255,255,255,0.03);
+    color:var(--muted);
+    border:1px solid rgba(255,255,255,0.02);
+  }
+
+  /* small accessibility focus */
+  .btn:focus{ outline:3px solid rgba(124,58,237,0.22); outline-offset:3px; border-radius:10px; }
+</style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <header>
+      <h1>Pick a plan that fits</h1>
+      <p>Monthly & yearly toggle — prices shown in <strong>₹</strong>. Most Popular plan recommended.</p>
+    </header>
+
+    <div class="toggle" aria-hidden="false">
+      <div class="badge">Monthly</div>
+
+      <label class="switch" id="billingSwitch" data-state="monthly" aria-label="Toggle billing period">
+        <input type="checkbox" id="switchInput" aria-hidden="true" />
+        <span class="knob" aria-hidden="true"></span>
+      </label>
+
+      <div class="badge">Yearly <small style="display:block;font-size:11px;color:var(--muted)">save 20%</small></div>
+    </div>
+
+    <section class="grid" aria-label="Pricing plans">
+      <!-- Starter -->
+      <article class="card" aria-labelledby="plan-starter">
+        <div>
+          <div class="plan-name" id="plan-starter">Starter</div>
+          <div class="muted">For individuals</div>
+        </div>
+
+        <div>
+          <span class="price" data-monthly="499" data-yearly="4990">₹499</span>
+          <span class="period">/mo</span>
+          <div class="price-sub">Billed monthly</div>
+        </div>
+
+        <ul class="features" aria-hidden="false">
+          <li>Up to 5 projects</li>
+          <li>Basic analytics</li>
+          <li>Email support</li>
+        </ul>
+
+        <div class="cta">
+          <a href="#" class="btn">Get Starter</a>
+        </div>
+      </article>
+
+      <!-- Popular -->
+      <article class="card popular scale" aria-labelledby="plan-pro">
+        <div class="ribbon" aria-hidden="true">MOST POPULAR</div>
+        <div class="pulse" aria-hidden="true"></div>
+
+        <div>
+          <div class="plan-name" id="plan-pro">Pro</div>
+          <div class="muted">For growing teams</div>
+        </div>
+
+        <div>
+          <span class="price" data-monthly="1299" data-yearly="12990">₹1,299</span>
+          <span class="period">/mo</span>
+          <div class="price-sub">Billed monthly</div>
+        </div>
+
+        <ul class="features">
+          <li>Unlimited projects</li>
+          <li>Advanced analytics</li>
+          <li>Priority support</li>
+        </ul>
+
+        <div class="cta">
+          <a href="#" class="btn">Start Pro</a>
+        </div>
+      </article>
+
+      <!-- Enterprise -->
+      <article class="card" aria-labelledby="plan-enterprise">
+        <div>
+          <div class="plan-name" id="plan-enterprise">Enterprise</div>
+          <div class="muted">For large organisations</div>
+        </div>
+
+        <div>
+          <span class="price" data-monthly="2999" data-yearly="29990">₹2,999</span>
+          <span class="period">/mo</span>
+          <div class="price-sub">Billed monthly</div>
+        </div>
+
+        <ul class="features">
+          <li>Custom SLAs</li>
+          <li>Dedicated account manager</li>
+          <li>Single sign-on</li>
+        </ul>
+
+        <div class="cta">
+          <a href="#" class="btn secondary">Contact Sales</a>
+        </div>
+      </article>
+    </section>
+  </div>
+
+<script>
+  // Billing toggle: toggles text & prices (monthly/yearly)
+  (function(){
+    const switchWrap = document.getElementById('billingSwitch');
+    const switchInput = document.getElementById('switchInput');
+    const cards = document.querySelectorAll('.card');
+
+    function setState(state){
+      switchWrap.setAttribute('data-state', state);
+      const isYearly = state === 'yearly';
+      document.querySelectorAll('.card').forEach(card => {
+        const priceEl = card.querySelector('.price');
+        const monthly = priceEl.getAttribute('data-monthly');
+        const yearly = priceEl.getAttribute('data-yearly');
+
+        if(isYearly){
+          // show discounted per-month yearly price OR yearly total: we show per-month equivalent with 'Billed yearly'
+          const perMonth = Math.round((parseFloat(yearly) * 0.8) / 12); // example: apply 20% off if billed yearly
+          priceEl.textContent = '₹' + perMonth.toLocaleString();
+          card.querySelector('.price-sub').textContent = 'Billed yearly (20% off)';
+        } else {
+          priceEl.textContent = '₹' + parseFloat(monthly).toLocaleString();
+          card.querySelector('.price-sub').textContent = 'Billed monthly';
+        }
+      });
+    }
+
+    // init
+    setState('monthly');
+
+    switchInput.addEventListener('change', (e) => {
+      const newState = e.target.checked ? 'yearly' : 'monthly';
+      setState(newState);
+      // add small micro-animation to the popular plan
+      const popular = document.querySelector('.popular');
+      popular.classList.remove('scale');
+      // force reflow then re-add
+      void popular.offsetWidth;
+      popular.classList.add('scale');
+    });
+  })();
+</script>
+</body>
+</html>
